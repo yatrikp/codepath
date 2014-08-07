@@ -20,5 +20,5 @@ MIT
 Screenshots
 ------------
 
-
+![Alt text](screenshots/todo_1.gif?raw=true)
 
