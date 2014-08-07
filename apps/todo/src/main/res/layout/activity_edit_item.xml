@@ -1,0 +1,33 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="10dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="30dp"
+    tools:context="com.github.yatrik.app.todo.EditItemActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editLabel"
+        android:textSize="25dp"
+        android:text="Edit Item Below:" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editItem"
+        android:layout_alignBottom="@+id/editLabel"
+        android:hint="Enter New Item"
+        />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnSaveItem"
+        android:onClick="editTodoItem"
+        android:text="Save" />
+
+</LinearLayout>
