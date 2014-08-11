@@ -9,6 +9,7 @@
           <set>
             <option value="C:\project\apps\codepath\apps" />
             <option value="C:\project\apps\codepath\apps\todo" />
+            <option value="C:\project\apps\codepath\apps\todopro" />
           </set>
         </option>
       </GradleProjectSettings>

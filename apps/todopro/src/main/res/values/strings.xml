@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TodoPro</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="date">Remind Date</string>
+    <string name="time">At</string>
+
+    <color name="app_default_color">#33b5e5</color>
+    <color name="high_priority">#64caf0</color>
+    <color name="normal_priority">#a5e0f6</color>
+    <color name="low_priority">#e6f0f4</color>
+</resources>
