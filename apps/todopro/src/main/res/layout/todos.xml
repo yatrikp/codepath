@@ -22,16 +22,19 @@
         android:id="@+id/todo_description"
         android:focusable="false"
         android:maxLines="1"
+        android:maxWidth="230dp"
         android:ellipsize="end"
         android:textSize="20dp"
         android:background="@android:color/transparent"
         />
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
+        android:paddingRight="10dp"
         android:gravity="right"
+        android:layout_gravity="bottom"
         android:id="@+id/todo_remind_on"
         android:focusable="false"
         android:textSize="10dp"

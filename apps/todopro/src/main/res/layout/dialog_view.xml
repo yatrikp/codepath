@@ -62,15 +62,30 @@
             />
     </RadioGroup>
 
+    <TextView
+        android:id="@+id/set_completion_date"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:paddingLeft="10dp"
+        android:clickable="true"
+        android:text="Set Completion Date"
+        android:textColor="@color/app_default_color"
+        android:textSize="15sp"
+        />
 
     <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/remind_on_date_view"
         android:layout_height="wrap_content"
         android:layout_width="fill_parent"
         android:layout_gravity="center_horizontal"
         android:paddingLeft="12dp"
         android:paddingRight="12dp"
         android:paddingTop="20dp"
+        android:visibility="gone"
+        android:animateLayoutChanges="true"
         >
 
         <kankan.wheel.widget.WheelView

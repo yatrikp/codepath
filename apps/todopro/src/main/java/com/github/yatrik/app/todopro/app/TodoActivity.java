@@ -9,6 +9,7 @@ import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -75,10 +76,15 @@ public class TodoActivity extends Activity {
             case R.id.action_add :
                 showDialog(false,-1);
                 break;
-//            case R.id.action_delete:
-//                itemAdapter.deleteSelected();
-//                break;
-
+            case R.id.action_delete:
+                itemAdapter.deleteSelected();
+                break;
+            case R.id.ic_action_sort_on_priority:
+                itemAdapter.performSort(Constants.SORTING_ON.PRIORITY);
+                break;
+            case R.id.ic_action_sort_on_completion_date:
+                itemAdapter.performSort(Constants.SORTING_ON.REMIND_ON_DATE);
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -101,9 +107,14 @@ public class TodoActivity extends Activity {
         final RadioGroup radioPriority = (RadioGroup) promptView.findViewById(R.id.radio_priority);
 
         // remindOn views
+        final View remindOnDateView = promptView.findViewById(R.id.remind_on_date_view);
         final WheelView remindOnDay = (WheelView) promptView.findViewById(R.id.day);
         final WheelView remindOnHour = (WheelView) promptView.findViewById(R.id.hour);
         final WheelView remindOnMin = (WheelView) promptView.findViewById(R.id.mins);
+
+        // set Completion Date Text View
+        final TextView setCompletionDateTextView = (TextView) promptView.findViewById(R.id.set_completion_date);
+        final Boolean completionDateVisible = false;
 
         // adding datetime wheel to view
         NumericWheelAdapter hourAdapter = new NumericWheelAdapter(this, 0, 23);
@@ -124,46 +135,48 @@ public class TodoActivity extends Activity {
 
         remindOnDay.setViewAdapter(new DayArrayAdapter(this, cal));
 
-        if(isEdit){
+        if(isEdit) {
             Todo item = itemAdapter.getById(todoId);
 
             // set description for edit
             input.setText(item.getDescription());
 
             // set priority for edit
-            if(item.getPriority()==Constants.PRIORITY.HIGH.getPriority()){
+            if (item.getPriority() == Constants.PRIORITY.HIGH.getPriority()) {
                 setRadioButtonColor(promptView.findViewById(R.id.radio_priority_high));
-            }
-            else if(item.getPriority()==Constants.PRIORITY.NORMAL.getPriority()){
+            } else if (item.getPriority() == Constants.PRIORITY.NORMAL.getPriority()) {
                 setRadioButtonColor(promptView.findViewById(R.id.radio_priority_normal));
-            }
-            else if(item.getPriority()==Constants.PRIORITY.LOW.getPriority()){
+            } else if (item.getPriority() == Constants.PRIORITY.LOW.getPriority()) {
                 setRadioButtonColor(promptView.findViewById(R.id.radio_priority_low));
             }
 
-            // set remindOn for edit
-            try {
-                Date remindOnDate = Constants.TODO_REMINDER_FORMAT.parse(item.getRemindOn());
-                Calendar remindOnCal = Calendar.getInstance();
-                remindOnCal.setTime(remindOnDate);
-
-                if (remindOnCal.get(Calendar.DAY_OF_YEAR)==Calendar.getInstance().get(Calendar.DAY_OF_YEAR)){
-                    remindOnDay.setCurrentItem(0);
-                }
-                else if(remindOnCal.get(Calendar.DAY_OF_YEAR) > Calendar.getInstance().get(Calendar.DAY_OF_YEAR)){
-                    remindOnDay.setCurrentItem(remindOnCal.get(Calendar.DAY_OF_YEAR)
-                            - Calendar.getInstance().get(Calendar.DAY_OF_YEAR));
-                }
-                remindOnHour.setCurrentItem(remindOnCal.get(Calendar.HOUR_OF_DAY));
-                remindOnMin.setCurrentItem(remindOnCal.get(Calendar.MINUTE));
+            if (item.getRemindOn() !=  null && !item.getRemindOn().equals("")){
+                remindOnDateView.setVisibility(View.VISIBLE);
+                setCompletionDateTextView.setText(Constants.CLEAR_COMPLETION_DATE);
             }
-            catch(ParseException exception){
-                exception.printStackTrace();
+
+            if (item.getRemindOn() != null && !item.getRemindOn().equals("")){
+                try {
+                    Date remindOnDate = Constants.TODO_REMINDER_FORMAT.parse(item.getRemindOn());
+                    Calendar remindOnCal = Calendar.getInstance();
+                    remindOnCal.setTime(remindOnDate);
+
+                    if (remindOnCal.get(Calendar.DAY_OF_YEAR) == Calendar.getInstance().get(Calendar.DAY_OF_YEAR)) {
+                        remindOnDay.setCurrentItem(0);
+                    } else if (remindOnCal.get(Calendar.DAY_OF_YEAR) > Calendar.getInstance().get(Calendar.DAY_OF_YEAR)) {
+                        remindOnDay.setCurrentItem(remindOnCal.get(Calendar.DAY_OF_YEAR)
+                                - Calendar.getInstance().get(Calendar.DAY_OF_YEAR));
+                    }
+                    remindOnHour.setCurrentItem(remindOnCal.get(Calendar.HOUR_OF_DAY));
+                    remindOnMin.setCurrentItem(remindOnCal.get(Calendar.MINUTE));
+                } catch (ParseException exception) {
+                    exception.printStackTrace();
+                }
             }
         }else{
 //            textView.setText("Add:");
             // setting the default radio priority to normal for Add flow
-            radioPriority.check(R.id.radio_priority_normal);
+            setRadioButtonColor(promptView.findViewById(R.id.radio_priority_normal));
         }
 
         alertDialogBuilder.setCancelable(true);
@@ -206,37 +219,41 @@ public class TodoActivity extends Activity {
                     }
                 }
 
-
-                // getting the remindOn selected values
-                String daySelected = ((DayArrayAdapter) remindOnDay.getViewAdapter()).getItemText(remindOnDay.getCurrentItem()).toString();
-                String hourSelected = ((NumericWheelAdapter) remindOnHour.getViewAdapter()).getItemText(remindOnHour.getCurrentItem()).toString();
-                String minSelected = ((NumericWheelAdapter) remindOnMin.getViewAdapter()).getItemText(remindOnMin.getCurrentItem()).toString();
                 Calendar selectedCalendar = Calendar.getInstance();
-                try {
-                    Date date = Constants.TODO_REMINDER_FORMAT.parse(daySelected);
-                    selectedCalendar.setTime(date);
-                    selectedCalendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hourSelected));
-                    selectedCalendar.set(Calendar.MINUTE, Integer.parseInt(minSelected));
+                boolean completionDateSet = false;
+                // get the completion date only if its set
+                if(setCompletionDateTextView.getText().toString().equalsIgnoreCase(Constants.CLEAR_COMPLETION_DATE)) {
+                   // getting the remindOn selected values
+                    String daySelected = ((DayArrayAdapter) remindOnDay.getViewAdapter()).getItemText(remindOnDay.getCurrentItem()).toString();
+                    String hourSelected = ((NumericWheelAdapter) remindOnHour.getViewAdapter()).getItemText(remindOnHour.getCurrentItem()).toString();
+                    String minSelected = ((NumericWheelAdapter) remindOnMin.getViewAdapter()).getItemText(remindOnMin.getCurrentItem()).toString();
+                    try {
+                        Date date = Constants.TODO_REMINDER_FORMAT.parse(daySelected);
+                        selectedCalendar.setTime(date);
+                        selectedCalendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hourSelected));
+                        selectedCalendar.set(Calendar.MINUTE, Integer.parseInt(minSelected));
+                    } catch (ParseException exception) {
+                        exception.printStackTrace();
+                    }
+                    completionDateSet = true;
                 }
-                catch(ParseException exception){
-                    exception.printStackTrace();
-                }
-
 
                 if(inputString!=null && !inputString.trim().equals("")){
                     if(isEdit){
-                        itemAdapter.update(todoId,inputString, Constants.TODO_REMINDER_FORMAT.format(selectedCalendar.getTime()),
+                        itemAdapter.update(todoId,inputString,
+                                completionDateSet?Constants.TODO_REMINDER_FORMAT.format(selectedCalendar.getTime()):"",
                                 prioritySelected);
 
                     }else{
                         Todo todo=new Todo();
                         todo.setDescription(inputString);
-                        todo.setRemindOn(Constants.TODO_REMINDER_FORMAT.format(selectedCalendar.getTime()));
+                        todo.setRemindOn(completionDateSet?Constants.TODO_REMINDER_FORMAT.format(selectedCalendar.getTime()):"");
                         todo.setPriority(prioritySelected);
                         itemAdapter.addTodo(todo);
                     }
                 }
                 alertD.cancel();
+//                itemAdapter.refresh();
             }
         });
 
@@ -246,6 +263,24 @@ public class TodoActivity extends Activity {
             public void onClick(View v) {
                 alertD.cancel();
             }
+        });
+
+
+        setCompletionDateTextView.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                String completionDateText = ((TextView)arg0).getText().toString();
+                if (completionDateText.equalsIgnoreCase("Set Completion Date")) {
+                    remindOnDateView.setVisibility(View.VISIBLE);
+                    ((TextView)arg0).setText(Constants.CLEAR_COMPLETION_DATE);
+                }
+                else{
+                    remindOnDateView.setVisibility(View.GONE);
+                    ((TextView)arg0).setText(Constants.SET_COMPLETION_DATE);
+                }
+            }
+
         });
 
         alertD.show();

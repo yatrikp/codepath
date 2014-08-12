@@ -7,6 +7,9 @@ import java.text.SimpleDateFormat;
  */
 public class Constants {
 
+    public static final String SET_COMPLETION_DATE = "Set Completion Date";
+    public static final String CLEAR_COMPLETION_DATE = "Clear Completion Date";
+
     public static final SimpleDateFormat TODO_REMINDER_FORMAT = new SimpleDateFormat("yyyyMMddHHmm");
     public static final SimpleDateFormat TODO_TODAYS_REMINDER_FORMAT = new SimpleDateFormat("HH:mm");
     public static final SimpleDateFormat TODO_REST_REMINDER_FORMAT = new SimpleDateFormat("MMM d, HH:mm");
@@ -24,6 +27,11 @@ public class Constants {
         public int getPriority(){
             return this.priority;
         }
+    }
+
+    public static enum SORTING_ON {
+        PRIORITY,
+        REMIND_ON_DATE;
     }
 
 }

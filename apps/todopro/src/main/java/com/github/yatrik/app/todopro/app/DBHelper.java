@@ -66,7 +66,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public List<Todo> getAll() {
-        String selectQuery="select id,description,completed,created_on,remind_on,priority from todo ";
+        String selectQuery="select id,description,completed,created_on,remind_on,priority from todo";
         return executeQuery(selectQuery);
     }
 

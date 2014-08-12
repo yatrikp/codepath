@@ -1,8 +1,6 @@
 package com.github.yatrik.app.todopro.app;
 
-import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +15,7 @@ import com.github.yatrik.app.todopro.R;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -36,6 +35,9 @@ public class TodoAdapter extends ArrayAdapter<Todo> {
 
     //Context
     final private Context context;
+
+    //Sorting Order;
+    private Constants.SORTING_ON sortingOn = Constants.SORTING_ON.PRIORITY;
 
     public TodoAdapter(Context context, ArrayList<Todo> todos) {
         super(context, R.layout.todos, todos);
@@ -74,6 +76,7 @@ public class TodoAdapter extends ArrayAdapter<Todo> {
         viewHolder.todoText.setText(todo.getDescription());
         viewHolder.todoSel.setTag(todo.getId());
         viewHolder.todoSel.setChecked(todo.isCompleted());
+        viewHolder.todoRemindOn.setText(todo.getRemindOn()==null?"":todo.getRemindOn());
 
         todoMap.put(todo.getId(), todo);
         if (todo.isCompleted()) {
@@ -102,7 +105,6 @@ public class TodoAdapter extends ArrayAdapter<Todo> {
             }
         }
 
-
         // set view color as per the priority
         if(todo.getPriority()==Constants.PRIORITY.HIGH.getPriority()) {
             convertView.setBackgroundColor(context.getResources().getColor(R.color.high_priority));
@@ -114,9 +116,7 @@ public class TodoAdapter extends ArrayAdapter<Todo> {
             convertView.setBackgroundColor(context.getResources().getColor(R.color.low_priority));
         }
 
-
         // Return the completed view to render on screen
-
         return convertView;
     }
 
@@ -133,13 +133,13 @@ public class TodoAdapter extends ArrayAdapter<Todo> {
         for (Todo item : todos) {
             todoMap.put(item.getId(), item);
         }
-
     }
+
     public void refresh() {
         this.todos.clear();
         this.todos.addAll(db.getAll());
+        performSort();
         populateTodoMap();
-        this.notifyDataSetChanged();
     }
 
     public Todo getById(int todoId){
@@ -152,7 +152,7 @@ public class TodoAdapter extends ArrayAdapter<Todo> {
         todo.setCreatedOn(Constants.TODO_REMINDER_FORMAT.format(Calendar.getInstance().getTime()));
         this.todos.add(todo);
         this.todoMap.put(id, todo);
-        this.notifyDataSetChanged();
+        performSort();
     }
 
     public void update(Integer id, String description, String remindOn, Integer priority) {
@@ -160,15 +160,11 @@ public class TodoAdapter extends ArrayAdapter<Todo> {
 
         if (todo != null) {
             todo.setDescription(description);
-            if (remindOn != null && !remindOn.equals("")){
-                todo.setRemindOn(remindOn);
-            }
+            todo.setRemindOn(remindOn);
             todo.setPriority(priority);
             db.update(todo);
-            this.notifyDataSetChanged();
-
+            performSort();
         }
-
     }
 
     private void updateIsDone(Integer todoId, Boolean isCompleted) {
@@ -185,6 +181,29 @@ public class TodoAdapter extends ArrayAdapter<Todo> {
         refresh();
     }
 
+    public void sortByPriority(){
+        sortingOn = Constants.SORTING_ON.PRIORITY;
+        Collections.sort(todos, Todo.PriorityComparator);
+        notifyDataSetChanged();
+    }
 
+    public void sortByRemindOnDate(){
+        sortingOn = Constants.SORTING_ON.REMIND_ON_DATE;
+        Collections.sort(todos, Todo.RemindOnComparator);
+        notifyDataSetChanged();
+    }
+
+    public void performSort(){
+        performSort(sortingOn);
+    }
+
+    public void performSort(Constants.SORTING_ON sortOn){
+        if(sortOn.equals(Constants.SORTING_ON.PRIORITY)){
+            sortByPriority();
+        }
+        else if(sortOn.equals(Constants.SORTING_ON.REMIND_ON_DATE)){
+            sortByRemindOnDate();
+        }
+    }
 
 }
